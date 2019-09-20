@@ -12,7 +12,6 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -75,13 +74,12 @@ public class User implements Serializable {
 
 	@Column(name = "is_active")
 	private Boolean isActive;
-	@Column(name="token",columnDefinition = "text")
-	private String token;
+
 	@ManyToMany(mappedBy = "userCollection")
 	@JsonIgnore
 	private Set<Interview> interviewCollection;
 
-	@ManyToMany(fetch = FetchType.EAGER)
+	@ManyToMany
 	@JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private Set<Role> roleCollection;
 

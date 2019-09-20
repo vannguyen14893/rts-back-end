@@ -9,7 +9,6 @@ import org.springframework.mail.MailException;
 import com.cmc.recruitment.entity.InterviewStatus;
 import com.cmc.recruitment.entity.Request;
 import com.cmc.recruitment.entity.User;
-import com.cmc.recruitment.utils.UserDto;
 
 public interface UserService {
 
@@ -64,6 +63,4 @@ public interface UserService {
 	List<User> findByGroup(Long groupId);
 
 	List<User> getUserByRoleAndDepartment(Long roleId, Long departmentId);
-	
-	UserDto updateUserLdap(UserDto userDto,String type);
 }

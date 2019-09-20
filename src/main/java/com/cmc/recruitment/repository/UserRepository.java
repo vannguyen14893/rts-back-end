@@ -49,7 +49,5 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 	
 	@Query(QueryConstants.User.FIND_USER_BY_DEPARTMENR_ADN_ROLE)
 	List<User> findUserByRoleAndDepartment(@Param(Constants.PARAM.ROLE_ID_PARAM) Long roleId, @Param(Constants.PARAM.DEPARTMENT_ID_PARAM) Long departmentId);
-	@Query(value="select u from User u where u.username=?1")
-	User loadUserByUsername(String username);
-	
+
 }

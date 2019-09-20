@@ -26,7 +26,6 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
@@ -61,13 +60,11 @@ public class Interview implements Serializable {
 
   @Column(name = "start_time")
   @NotNull
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/M/yyyy HH:mm")
 //  @JsonFormat(pattern = "dd/MM/yyyy hh:mm", timezone = "Asia/Ho_Chi_Minh")
   private Date startTime;
 
   @Column(name = "end_time")
   @NotNull
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/M/yyyy HH:mm")
 //  @JsonFormat(pattern = "dd/MM/yyyy hh:mm", timezone = "Asia/Ho_Chi_Minh")
   private Date endTime;
 

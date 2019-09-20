@@ -1,6 +1,7 @@
 package com.cmc.recruitment.rest;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.token.ConsumerTokenServices;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,14 +32,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.cmc.recruitment.entity.Role;
 import com.cmc.recruitment.entity.User;
-import com.cmc.recruitment.repository.UserRepository;
 import com.cmc.recruitment.response.BaseResponse;
 import com.cmc.recruitment.service.RoleService;
 import com.cmc.recruitment.service.UserService;
 import com.cmc.recruitment.utils.Constants;
 import com.cmc.recruitment.utils.EmailHelper;
 import com.cmc.recruitment.utils.UpLoadFiles;
-import com.cmc.recruitment.utils.UserDto;
 
 @RestController
 public class UserController {
@@ -40,22 +45,21 @@ public class UserController {
   @Autowired
   UserService userService;
 
-//  @Autowired
-//  TokenStore tokenStore;
-//
-//  @Autowired
-//  ConsumerTokenServices tokenServices;
-//
-//  @Autowired
-//  DefaultTokenServices defaultTokenServices;
+  @Autowired
+  TokenStore tokenStore;
+
+  @Autowired
+  ConsumerTokenServices tokenServices;
+
+  @Autowired
+  DefaultTokenServices defaultTokenServices;
 
   @Autowired
   UpLoadFiles uploadFiles;
   
   @Autowired
   RoleService roleService;
-  @Autowired
-  private UserRepository userRepository;
+
   @GetMapping("/users")
   public ResponseEntity<Page<User>> getListStUserByParrent(Pageable pageable) {
     Page<User> list = userService.findAllUser(pageable);
@@ -146,16 +150,16 @@ public class UserController {
       user.setEmail(receive.getEmail());
       user.setFullName(receive.getFullName());
       user.setDepartmentId(receive.getDepartmentId());
-//      if(!user.getRoleCollection().equals(receive.getRoleCollection())) {
-//    	  OAuth2Authentication auth = (OAuth2Authentication) SecurityContextHolder.getContext()
-//    	          .getAuthentication();
-//    	  String clientId = auth.getOAuth2Request().getClientId();
-//    	  ArrayList<OAuth2AccessToken> listAccessToken = (ArrayList<OAuth2AccessToken>) tokenStore
-//    	          .findTokensByClientIdAndUserName(clientId, user.getUsername());
-//    	  for (OAuth2AccessToken i : listAccessToken) {
-//    	    tokenServices.revokeToken(i.getValue());
-//    	  }
-//      }
+      if(!user.getRoleCollection().equals(receive.getRoleCollection())) {
+    	  OAuth2Authentication auth = (OAuth2Authentication) SecurityContextHolder.getContext()
+    	          .getAuthentication();
+    	  String clientId = auth.getOAuth2Request().getClientId();
+    	  ArrayList<OAuth2AccessToken> listAccessToken = (ArrayList<OAuth2AccessToken>) tokenStore
+    	          .findTokensByClientIdAndUserName(clientId, user.getUsername());
+    	  for (OAuth2AccessToken i : listAccessToken) {
+    	    tokenServices.revokeToken(i.getValue());
+    	  }
+      }
       user.setRoleCollection(receive.getRoleCollection());
       user.setGroupCollection(receive.getGroupCollection());
       userService.saveUser(user);
@@ -215,18 +219,18 @@ public class UserController {
                 Constants.RESPONSE.SAME_OLD_PASS),
             HttpStatus.OK);
       default: {
-//        OAuth2AccessToken newToken = null;
-//        OAuth2Authentication auth = (OAuth2Authentication) SecurityContextHolder.getContext()
-//            .getAuthentication();
-//        String clientId = auth.getOAuth2Request().getClientId();
-//        ArrayList<OAuth2AccessToken> listAccessToken = (ArrayList<OAuth2AccessToken>) tokenStore
-//            .findTokensByClientIdAndUserName(clientId, user.getUsername());
-//        for (OAuth2AccessToken i : listAccessToken) {
-//          tokenServices.revokeToken(i.getValue());
-//          newToken = defaultTokenServices.createAccessToken(auth);
-//        }
+        OAuth2AccessToken newToken = null;
+        OAuth2Authentication auth = (OAuth2Authentication) SecurityContextHolder.getContext()
+            .getAuthentication();
+        String clientId = auth.getOAuth2Request().getClientId();
+        ArrayList<OAuth2AccessToken> listAccessToken = (ArrayList<OAuth2AccessToken>) tokenStore
+            .findTokensByClientIdAndUserName(clientId, user.getUsername());
+        for (OAuth2AccessToken i : listAccessToken) {
+          tokenServices.revokeToken(i.getValue());
+          newToken = defaultTokenServices.createAccessToken(auth);
+        }
         return new ResponseEntity<BaseResponse>(new BaseResponse(Constants.RESPONSE.SUCCESS_STATUS,
-            Constants.RESPONSE.SUCCESS_CODE, Constants.RESPONSE.SUCCESS_MESSAGE, null),
+            Constants.RESPONSE.SUCCESS_CODE, Constants.RESPONSE.SUCCESS_MESSAGE, newToken),
             HttpStatus.CREATED);
       }
 
@@ -354,7 +358,7 @@ public class UserController {
    * @modifier_date: Mar 12, 2018
    * @return
    */
-  @GetMapping("/users/departments")
+  @GetMapping("/users/departments/{departmentId}")
   public ResponseEntity<?> findAll(
       @RequestParam(value = Constants.PARAM.ID_PARAM, required = false) long id) {
     List<User> list;
@@ -480,14 +484,14 @@ public class UserController {
             Constants.RESPONSE.NOT_FOUND, Constants.RESPONSE.NOT_FOUND), HttpStatus.NO_CONTENT);
       user.setIsActive(isActive);
       userService.updateUser(user);
-//      OAuth2Authentication auth = (OAuth2Authentication) SecurityContextHolder.getContext()
-//          .getAuthentication();
-//      String clientId = auth.getOAuth2Request().getClientId();
-//      ArrayList<OAuth2AccessToken> listAccessToken = (ArrayList<OAuth2AccessToken>) tokenStore
-//          .findTokensByClientIdAndUserName(clientId, user.getUsername());
-//      for (OAuth2AccessToken i : listAccessToken) {
-//        tokenServices.revokeToken(i.getValue());
-//      }
+      OAuth2Authentication auth = (OAuth2Authentication) SecurityContextHolder.getContext()
+          .getAuthentication();
+      String clientId = auth.getOAuth2Request().getClientId();
+      ArrayList<OAuth2AccessToken> listAccessToken = (ArrayList<OAuth2AccessToken>) tokenStore
+          .findTokensByClientIdAndUserName(clientId, user.getUsername());
+      for (OAuth2AccessToken i : listAccessToken) {
+        tokenServices.revokeToken(i.getValue());
+      }
     } catch (Exception e) {
       return new ResponseEntity<String>(Constants.RESPONSE.ERROR_SERVER,
           HttpStatus.INTERNAL_SERVER_ERROR);
@@ -532,18 +536,5 @@ public class UserController {
     } catch (Exception e) {
       return new ResponseEntity<List<User>>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }
-  @PostMapping(value="/check-user/ams")
-  public ResponseEntity<UserDto> checkUserAmsInfo(@RequestBody UserDto userDto){
-	  User userOld=userRepository.loadUserByUsername(userDto.getUserName());
-	  if(userOld==null) {  
-				userDto=userService.updateUserLdap(userDto,"insert");
-				//save
-	         }
-			else {
-				userDto=userService.updateUserLdap(userDto,"update");
-			}
-		   
-	  return new ResponseEntity<UserDto>(userDto,HttpStatus.OK);
   }
 }

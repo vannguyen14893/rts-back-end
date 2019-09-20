@@ -1,8 +1,6 @@
 package com.cmc.recruitment.service.impl;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Executors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,22 +12,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.cmc.recruitment.entity.Group;
 import com.cmc.recruitment.entity.InterviewStatus;
 import com.cmc.recruitment.entity.Request;
-import com.cmc.recruitment.entity.Role;
 import com.cmc.recruitment.entity.User;
-import com.cmc.recruitment.repository.DepartmentRepository;
-import com.cmc.recruitment.repository.GroupRepository;
 import com.cmc.recruitment.repository.InterviewStatusRepository;
 import com.cmc.recruitment.repository.RequestRepository;
-import com.cmc.recruitment.repository.RoleRepository;
 import com.cmc.recruitment.repository.UserRepository;
 import com.cmc.recruitment.service.UserService;
 import com.cmc.recruitment.specification.UserSpecification;
 import com.cmc.recruitment.utils.Constants;
 import com.cmc.recruitment.utils.EmailHelper;
-import com.cmc.recruitment.utils.UserDto;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -51,12 +43,7 @@ public class UserServiceImpl implements UserService {
 
   @Autowired
   private InterviewStatusRepository interviewStatusRepository;
-  @Autowired
-  private DepartmentRepository departmentRepository;
-  @Autowired
-  private RoleRepository roleRepository;
-  @Autowired
-  private GroupRepository groupRepository;
+
   @Override
   public Page<User> findAllUser(Pageable pageable) {
     return userRepository.findAllUser(pageable);
@@ -306,54 +293,4 @@ public class UserServiceImpl implements UserService {
   public List<User> getUserByRoleAndDepartment(Long roleId, Long departmentId) {
   	return userRepository.findUserByRoleAndDepartment(roleId, departmentId);
   }
-
-@Override
-public UserDto updateUserLdap(UserDto userDto, String type) {
-	if("insert".equals(type)) {
-		User user=new User();
-		user.setFullName(userDto.getFullName());
-		user.setAvatarUrl(userDto.getAvatar());
-		user.setEmail(userDto.getEmail());
-		user.setUsername(userDto.getUserName());
-		//user.setToken(userDto.getToken());
-		Set<Role> defaultRole = new HashSet<>();
-		Role roleMemberDu= roleRepository.findByRoleName("ROLE_DU_MEMBER");
-		defaultRole.add(roleMemberDu);
-		user.setRoleCollection(defaultRole);
-		Set<Group> groups=new HashSet<>();
-		Group group=groupRepository.findByTitle("Delivery Unit");
-		groups.add(group);
-		user.setGroupCollection(groups);
-		user.setGroupCollection(groups);
-		user.setDepartmentId(departmentRepository.findByTitle(userDto.getDepartmentName()));
-		String password="123";
-		user.setPassword(passwordEncoder.encode(password));
-		userRepository.save(user);
-		userDto.setId(user.getId());
-		userDto.setDepartmentId(user.getDepartmentId().getId());
-		userDto.setFullName(user.getFullName());
-		userDto.setAvatar(user.getAvatarUrl());
-		userDto.setDepartmentName(user.getDepartmentId().getTitle());
-		userDto.setRoleCollection(defaultRole);
-		userDto.setGroupCollection(groups);
-		return userDto;
-		}else {
-			User user= userRepository.loadUserByUsername(userDto.getUserName());	
-			user.setUsername(userDto.getUserName());
-			user.setEmail(userDto.getEmail());		
-			//user.setRoleCollection(userDto.getRoleCollection());
-			//user.setGroupCollection(userDto.getGroupCollection());
-			//user.setToken(userDto.getToken());
-			user.setAvatarUrl(userDto.getAvatar());		
-			userRepository.save(user);		
-			 userDto.setId(user.getId());
-			 userDto.setDepartmentId(user.getDepartmentId().getId());
-			 userDto.setFullName(user.getFullName());
-			 userDto.setAvatar(user.getAvatarUrl());
-			 userDto.setDepartmentName(user.getDepartmentId().getTitle());
-			 userDto.setRoleCollection(user.getRoleCollection());
-			 userDto.setGroupCollection(user.getGroupCollection());
-			 return userDto;
-		}
-}}
-
+}

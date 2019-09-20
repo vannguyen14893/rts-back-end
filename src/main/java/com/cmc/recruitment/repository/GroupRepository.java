@@ -17,5 +17,4 @@ import com.cmc.recruitment.entity.Group;
  */
 @Repository
 public interface GroupRepository extends JpaRepository<Group, Long> {
-	Group findByTitle(String title);
 }
